@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Plus, Send, Trash2, MoveRight, CheckCircle, Info, Users, Star, Settings, Copy, Archive } from 'lucide-react';
+import { Plus, Send, Trash2, MoveRight, CheckCircle, Info, Users, Star, Settings, Copy, Archive, Search } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
   ContextMenu,
@@ -18,6 +18,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { addVendor } from '../../lib/db';
 import { toast } from 'sonner';
 
@@ -30,6 +43,17 @@ const VendorListDetail = ({ currentList, setCurrentList }: VendorListDetailProps
   const [newVendorName, setNewVendorName] = useState('');
   const [newFolderName, setNewFolderName] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [movePopoverOpen, setMovePopoverOpen] = useState(false);
+  const [folderSearchQuery, setFolderSearchQuery] = useState('');
+
+  // Mock folders data - in a real app this would come from an API
+  const [folders, setFolders] = useState([
+    { id: '1', name: 'Graphic Designers' },
+    { id: '2', name: 'Writers' },
+    { id: '3', name: 'Developers' },
+    { id: '4', name: 'Translators' },
+    { id: '5', name: 'Project Managers' },
+  ]);
 
   const handleAddVendor = async () => {
     if (!newVendorName.trim() || !currentList.id) return;
@@ -70,6 +94,16 @@ const VendorListDetail = ({ currentList, setCurrentList }: VendorListDetailProps
     toast.success('List deleted successfully');
     setDeleteDialogOpen(false);
   };
+
+  const handleMoveToFolder = (folderId: string) => {
+    // In a real app, this would call API to move the list to another folder
+    toast.success(`Moved to folder successfully`);
+    setMovePopoverOpen(false);
+  };
+
+  const filteredFolders = folders.filter(folder => 
+    folder.name.toLowerCase().includes(folderSearchQuery.toLowerCase())
+  );
 
   return (
     <div className="bg-white border border-gray-200 rounded-md shadow-sm h-full">
@@ -131,9 +165,44 @@ const VendorListDetail = ({ currentList, setCurrentList }: VendorListDetailProps
           <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50">
             <Trash2 size={14} className="mr-1" /> Remove
           </Button>
-          <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50">
-            <MoveRight size={14} className="mr-1" /> Move <span className="ml-1">▼</span>
-          </Button>
+          <Popover open={movePopoverOpen} onOpenChange={setMovePopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50">
+                <MoveRight size={14} className="mr-1" /> Move <span className="ml-1">▼</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80">
+              <div className="space-y-4">
+                <h3 className="font-medium">Move to Folder</h3>
+                <div className="relative">
+                  <Search className="absolute left-2 top-3 h-4 w-4 text-gray-500" />
+                  <Input
+                    placeholder="Search folders..."
+                    className="pl-8"
+                    value={folderSearchQuery}
+                    onChange={(e) => setFolderSearchQuery(e.target.value)}
+                  />
+                </div>
+                <div className="max-h-60 overflow-y-auto">
+                  {filteredFolders.length > 0 ? (
+                    <div className="space-y-2">
+                      {filteredFolders.map((folder) => (
+                        <div
+                          key={folder.id}
+                          className="flex items-center p-2 rounded-md hover:bg-gray-100 cursor-pointer"
+                          onClick={() => handleMoveToFolder(folder.id)}
+                        >
+                          <span>{folder.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-sm py-2 text-center">No folders found</p>
+                  )}
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
           <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50">
             <CheckCircle size={14} className="mr-1" /> Post a Job
           </Button>
