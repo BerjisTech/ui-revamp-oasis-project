@@ -3,11 +3,11 @@ import React, { useState } from 'react';
 import { Plus, Send, Trash2, MoveRight, CheckCircle, Info, Users, Star, Settings, Copy, Archive, Search } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "@/components/ui/context-menu";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -116,29 +116,32 @@ const VendorListDetail = ({ currentList, setCurrentList }: VendorListDetailProps
             <Users size={16} className="text-gray-500" />
             <span className="text-gray-700 font-medium">{currentList.vendors?.length || 0}</span>
           </div>
+          <button className="text-gray-400 hover:text-blue-500 transition-colors">
+            <Info size={16} />
+          </button>
         </div>
-        <ContextMenu>
-          <ContextMenuTrigger asChild>
-            <Button variant="outline" size="sm">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="p-2">
               <span className="sr-only">Settings</span>
               <Settings size={18} />
             </Button>
-          </ContextMenuTrigger>
-          <ContextMenuContent className="w-56">
-            <ContextMenuItem onClick={handleCloneList}>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuItem onClick={handleCloneList}>
               <Copy className="mr-2 h-4 w-4" />
               <span>Clone list</span>
-            </ContextMenuItem>
-            <ContextMenuItem onClick={handleArchiveList}>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleArchiveList}>
               <Archive className="mr-2 h-4 w-4" />
               <span>Archive list</span>
-            </ContextMenuItem>
-            <ContextMenuItem onClick={handleDeleteList} className="text-red-600 hover:text-red-700">
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleDeleteList} className="text-red-600 hover:text-red-700">
               <Trash2 className="mr-2 h-4 w-4" />
               <span>Delete list</span>
-            </ContextMenuItem>
-          </ContextMenuContent>
-        </ContextMenu>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       
       <div className="p-4 flex flex-wrap items-center justify-between gap-4">
