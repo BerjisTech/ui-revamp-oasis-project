@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Plus, Send, Trash2, MoveRight, CheckCircle, Info, Users, Star, Settings, Copy, Archive, Search } from 'lucide-react';
+import { Plus, Send, Trash2, MoveRight, CheckCircle, Info, Users, Star, Settings, Copy, Archive, Search, X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -23,6 +23,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -45,6 +55,9 @@ const VendorListDetail = ({ currentList, setCurrentList }: VendorListDetailProps
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [movePopoverOpen, setMovePopoverOpen] = useState(false);
   const [folderSearchQuery, setFolderSearchQuery] = useState('');
+  const [composeDrawerOpen, setComposeDrawerOpen] = useState(false);
+  const [messageSubject, setMessageSubject] = useState('');
+  const [messageBody, setMessageBody] = useState('');
 
   // Mock folders data - in a real app this would come from an API
   const [folders, setFolders] = useState([
@@ -99,6 +112,19 @@ const VendorListDetail = ({ currentList, setCurrentList }: VendorListDetailProps
     // In a real app, this would call API to move the list to another folder
     toast.success(`Moved to folder successfully`);
     setMovePopoverOpen(false);
+  };
+
+  const handleSendMessage = () => {
+    if (!messageSubject.trim() || !messageBody.trim()) {
+      toast.error('Please fill in both subject and message');
+      return;
+    }
+    
+    // In a real app, this would call API to send the message
+    toast.success('Message sent successfully');
+    setMessageSubject('');
+    setMessageBody('');
+    setComposeDrawerOpen(false);
   };
 
   const filteredFolders = folders.filter(folder => 
@@ -162,9 +188,49 @@ const VendorListDetail = ({ currentList, setCurrentList }: VendorListDetailProps
       <div className="p-4 border-t border-gray-200">
         <div className="flex flex-wrap items-center gap-2 mb-4">
           <span className="text-gray-700">Select talents and...</span>
-          <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50">
-            <Send size={14} className="mr-1" /> Send message
-          </Button>
+          <Drawer open={composeDrawerOpen} onOpenChange={setComposeDrawerOpen}>
+            <DrawerTrigger asChild>
+              <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50">
+                <Send size={14} className="mr-1" /> Send message
+              </Button>
+            </DrawerTrigger>
+            <DrawerContent className="p-6">
+              <DrawerHeader className="px-0">
+                <DrawerTitle className="text-xl">Compose New Message</DrawerTitle>
+                <DrawerDescription>
+                  Send a message to vendors in {currentList.name}
+                </DrawerDescription>
+              </DrawerHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <label htmlFor="subject" className="text-sm font-medium">Subject</label>
+                  <Input 
+                    id="subject" 
+                    placeholder="Message subject" 
+                    value={messageSubject}
+                    onChange={(e) => setMessageSubject(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="message" className="text-sm font-medium">Message</label>
+                  <textarea 
+                    id="message" 
+                    rows={5}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    placeholder="Write your message here..."
+                    value={messageBody}
+                    onChange={(e) => setMessageBody(e.target.value)}
+                  />
+                </div>
+              </div>
+              <DrawerFooter className="px-0">
+                <Button onClick={handleSendMessage}>Send Message</Button>
+                <DrawerClose asChild>
+                  <Button variant="outline">Cancel</Button>
+                </DrawerClose>
+              </DrawerFooter>
+            </DrawerContent>
+          </Drawer>
           <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50">
             <Trash2 size={14} className="mr-1" /> Remove
           </Button>
