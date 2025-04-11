@@ -1,9 +1,19 @@
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Star, Edit, Users, ChevronDown, ChevronRight, Folder } from 'lucide-react';
+import { Plus, Star, Edit, Users, ChevronDown, ChevronRight, Folder, AlertTriangle } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { toast } from 'sonner';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ListItem {
   id: string;
@@ -21,9 +31,26 @@ interface ListBoardProps {
   onInviteClick: () => void;
 }
 
+interface ConfirmDialogState {
+  isOpen: boolean;
+  result: any;
+  onConfirm: () => void;
+  title: string;
+  description: string;
+  actionType: 'move' | 'nest';
+}
+
 const ListBoard = ({ lists, currentList, setCurrentList, onInviteClick }: ListBoardProps) => {
   const [newListName, setNewListName] = useState('');
   const [hierarchicalLists, setHierarchicalLists] = useState<ListItem[]>([]);
+  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState>({
+    isOpen: false,
+    result: null,
+    onConfirm: () => {},
+    title: '',
+    description: '',
+    actionType: 'move'
+  });
 
   // Convert flat lists to hierarchical structure
   useEffect(() => {
@@ -72,6 +99,28 @@ const ListBoard = ({ lists, currentList, setCurrentList, onInviteClick }: ListBo
       return;
     }
 
+    const { source, destination, draggableId } = result;
+    
+    // Prepare confirmation dialog data
+    const actionType = destination.droppableId !== "lists" ? 'nest' : 'move';
+    const dialogData = {
+      isOpen: true,
+      result,
+      onConfirm: () => applyDragChanges(result),
+      title: actionType === 'nest' 
+        ? "Nest this list as a child?" 
+        : "Move this list?",
+      description: actionType === 'nest'
+        ? "This will make the selected list a child of the target list. This action can be undone later."
+        : "This will reorder the lists. This action can be undone later.",
+      actionType
+    };
+    
+    // Show confirmation dialog
+    setConfirmDialog(dialogData);
+  };
+  
+  const applyDragChanges = (result: any) => {
     const { source, destination, draggableId } = result;
     
     // Clone the current hierarchical lists to modify
@@ -161,7 +210,7 @@ const ListBoard = ({ lists, currentList, setCurrentList, onInviteClick }: ListBo
     setHierarchicalLists(newLists);
   };
 
-  // Render a list item with its children recursively
+  // Render a list item with its children recursively (with infinite nesting support)
   const renderListItem = (list: ListItem, index: number, level: number = 0) => (
     <Draggable key={list.id} draggableId={list.id} index={index}>
       {(provided, snapshot) => (
@@ -216,7 +265,7 @@ const ListBoard = ({ lists, currentList, setCurrentList, onInviteClick }: ListBo
             </div>
           </div>
           
-          {/* Droppable area for child lists */}
+          {/* Droppable area for child lists - Support infinite nesting */}
           {list.isOpen && (
             <Droppable droppableId={`list-${list.id}`} type="list">
               {(provided) => (
@@ -293,6 +342,32 @@ const ListBoard = ({ lists, currentList, setCurrentList, onInviteClick }: ListBo
           </Droppable>
         </DragDropContext>
       </div>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={confirmDialog.isOpen} onOpenChange={(open) => setConfirmDialog({...confirmDialog, isOpen: open})}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-yellow-500" />
+              {confirmDialog.title}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmDialog.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => {
+                confirmDialog.onConfirm();
+                setConfirmDialog({...confirmDialog, isOpen: false});
+              }}
+            >
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

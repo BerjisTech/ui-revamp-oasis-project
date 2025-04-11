@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Button } from "@/components/ui/button";
@@ -22,19 +21,16 @@ const VendorManagement = () => {
   const [currentList, setCurrentList] = useState<VendorList>({
     id: '123', 
     name: 'Another banger',
+    vendorCount: 0,
     vendors: []
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   
-  // Fetch vendor lists
   useEffect(() => {
     const fetchLists = async () => {
       setIsLoading(true);
       try {
-        // In a real app, this would call the API
-        // const listsData = await getVendorLists();
-        // For demo, we'll use mock data with parent-child relationships
         const listsData: VendorList[] = [
           { id: '123', name: 'Another banger', vendorCount: 3 },
           { id: '456', name: 'Sublist', vendorCount: 0, parentId: '123' },
@@ -55,16 +51,12 @@ const VendorManagement = () => {
     fetchLists();
   }, []);
   
-  // Fetch vendors for the current list
   useEffect(() => {
     const fetchVendors = async () => {
       if (!currentList.id) return;
       
       setIsLoading(true);
       try {
-        // In a real app, this would call the API
-        // const vendorsData = await getVendors(currentList.id);
-        // For demo, we'll use mock data
         const vendorsData: any[] = [];
         setCurrentList(prev => ({ ...prev, vendors: vendorsData }));
       } catch (error) {
@@ -86,13 +78,11 @@ const VendorManagement = () => {
           <a href="#" className="text-blue-600 hover:underline">Learn more.</a>
         </p>
         
-        {/* Add the demo component at the top */}
         <div className="mb-6">
           <AddToListDemo />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          {/* Left Column - List Board */}
           <div className="md:col-span-3">
             <ListBoard 
               lists={lists} 
@@ -102,7 +92,6 @@ const VendorManagement = () => {
             />
           </div>
           
-          {/* Middle Column - Vendor List */}
           <div className="md:col-span-6">
             <VendorListDetail 
               currentList={currentList}
@@ -110,14 +99,12 @@ const VendorManagement = () => {
             />
           </div>
           
-          {/* Right Column - Message Board */}
           <div className="md:col-span-3">
             <MessageBoard listId={currentList.id} />
           </div>
         </div>
       </div>
 
-      {/* Modals */}
       <InviteVendorsModal 
         isOpen={showInviteModal} 
         onClose={() => setShowInviteModal(false)}
