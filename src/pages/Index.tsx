@@ -1,17 +1,13 @@
 
 import React from 'react';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
 import VendorManagement from '../components/VendorManagement';
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-grow bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <main className="flex-grow">
         <VendorManagement />
       </main>
-      <Footer />
     </div>
   );
 };
