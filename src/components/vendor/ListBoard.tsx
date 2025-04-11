@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Plus, Star, Edit, Users, ChevronDown, ChevronRight, Folder, AlertTriangle } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -52,26 +51,21 @@ const ListBoard = ({ lists, currentList, setCurrentList, onInviteClick }: ListBo
     actionType: 'move'
   });
 
-  // Convert flat lists to hierarchical structure
   useEffect(() => {
-    // First convert the flat list to a map for easier reference
     const listMap = new Map<string, ListItem>();
     lists.forEach(list => {
       listMap.set(list.id, { ...list, children: [], isOpen: true });
     });
 
-    // Then build the hierarchy
     const rootLists: ListItem[] = [];
     listMap.forEach(list => {
       if (list.parentId && listMap.has(list.parentId)) {
-        // This list has a parent
         const parent = listMap.get(list.parentId)!;
         if (!parent.children) {
           parent.children = [];
         }
         parent.children.push(list);
       } else {
-        // This is a root level list
         rootLists.push(list);
       }
     });
@@ -88,22 +82,19 @@ const ListBoard = ({ lists, currentList, setCurrentList, onInviteClick }: ListBo
       vendorCount: 0
     };
     
-    // In a real app, this would call the API to create the list
     toast.success('List created successfully');
     setNewListName('');
   };
 
   const handleDragEnd = (result: any) => {
-    // Dropped outside the list
     if (!result.destination) {
       return;
     }
 
     const { source, destination, draggableId } = result;
     
-    // Prepare confirmation dialog data
-    const actionType = destination.droppableId !== "lists" ? 'nest' : 'move';
-    const dialogData = {
+    const actionType = destination.droppableId !== "lists" ? 'nest' as const : 'move' as const;
+    const dialogData: ConfirmDialogState = {
       isOpen: true,
       result,
       onConfirm: () => applyDragChanges(result),
@@ -116,22 +107,17 @@ const ListBoard = ({ lists, currentList, setCurrentList, onInviteClick }: ListBo
       actionType
     };
     
-    // Show confirmation dialog
     setConfirmDialog(dialogData);
   };
-  
+
   const applyDragChanges = (result: any) => {
     const { source, destination, draggableId } = result;
     
-    // Clone the current hierarchical lists to modify
     const newHierarchicalLists = JSON.parse(JSON.stringify(hierarchicalLists));
     
-    // If droppable ID contains a list ID (for nesting), handle differently
     if (destination.droppableId !== "lists") {
-      // This is a drop inside another list (making it a child)
       const targetListId = destination.droppableId.replace('list-', '');
       
-      // Find the source list and remove it from its current position
       let draggedList: ListItem | null = null;
       const findAndRemoveList = (lists: ListItem[], id: string): boolean => {
         for (let i = 0; i < lists.length; i++) {
@@ -151,11 +137,9 @@ const ListBoard = ({ lists, currentList, setCurrentList, onInviteClick }: ListBo
       
       findAndRemoveList(newHierarchicalLists, draggableId);
       
-      // Update the parent ID of the dragged list
       if (draggedList) {
         draggedList.parentId = targetListId;
         
-        // Find the target list and add the dragged list to its children
         const findAndAddToTarget = (lists: ListItem[], targetId: string): boolean => {
           for (const list of lists) {
             if (list.id === targetId) {
@@ -177,18 +161,14 @@ const ListBoard = ({ lists, currentList, setCurrentList, onInviteClick }: ListBo
         findAndAddToTarget(newHierarchicalLists, targetListId);
       }
     } else {
-      // This is a reordering at the root level
       const draggedList = newHierarchicalLists.splice(source.index, 1)[0];
       newHierarchicalLists.splice(destination.index, 0, draggedList);
     }
     
     setHierarchicalLists(newHierarchicalLists);
     toast.success('List hierarchy updated');
-    
-    // In a real app, you would save the new hierarchy to the backend here
   };
 
-  // Toggle list expansion
   const toggleListOpen = (listId: string) => {
     const toggleInList = (lists: ListItem[]): boolean => {
       for (let i = 0; i < lists.length; i++) {
@@ -210,7 +190,6 @@ const ListBoard = ({ lists, currentList, setCurrentList, onInviteClick }: ListBo
     setHierarchicalLists(newLists);
   };
 
-  // Render a list item with its children recursively (with infinite nesting support)
   const renderListItem = (list: ListItem, index: number, level: number = 0) => (
     <Draggable key={list.id} draggableId={list.id} index={index}>
       {(provided, snapshot) => (
@@ -265,7 +244,6 @@ const ListBoard = ({ lists, currentList, setCurrentList, onInviteClick }: ListBo
             </div>
           </div>
           
-          {/* Droppable area for child lists - Support infinite nesting */}
           {list.isOpen && (
             <Droppable droppableId={`list-${list.id}`} type="list">
               {(provided) => (
@@ -343,7 +321,6 @@ const ListBoard = ({ lists, currentList, setCurrentList, onInviteClick }: ListBo
         </DragDropContext>
       </div>
 
-      {/* Confirmation Dialog */}
       <AlertDialog open={confirmDialog.isOpen} onOpenChange={(open) => setConfirmDialog({...confirmDialog, isOpen: open})}>
         <AlertDialogContent>
           <AlertDialogHeader>
