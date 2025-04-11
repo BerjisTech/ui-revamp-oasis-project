@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Bell, ChevronDown, HelpCircle, Home, Search, Settings, User } from 'lucide-react';
+import { Bell, ChevronDown, HelpCircle, Home, Search, Settings, User, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Header = () => {
@@ -45,9 +45,10 @@ const Header = () => {
             </div>
             
             <div className="relative group">
-              <button className="flex items-center gap-1">
-                Actividades para miembros <ChevronDown size={16} />
-              </button>
+              <Link to="/directory" className="flex items-center gap-1 hover:underline">
+                <Users size={16} className="mr-1" />
+                User Directory
+              </Link>
             </div>
             
             <div className="relative group">
