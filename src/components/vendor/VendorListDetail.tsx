@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Plus, Send, Trash2, MoveRight, CheckCircle, Info, Users } from 'lucide-react';
+import { Plus, Send, Trash2, MoveRight, CheckCircle, Info, Users, Star } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { addVendor } from '../../lib/db';
 import { toast } from 'sonner';
