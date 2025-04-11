@@ -1,9 +1,18 @@
 
-import React, { useState } from 'react';
-import { Plus, Star, Edit, Users } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Star, Edit, Users, ChevronDown, ChevronRight, Folder } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { toast } from 'sonner';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+
+interface ListItem {
+  id: string;
+  name: string;
+  vendorCount: number;
+  parentId?: string | null;
+  isOpen?: boolean;
+  children?: ListItem[];
+}
 
 interface ListBoardProps {
   lists: any[];
@@ -14,11 +23,33 @@ interface ListBoardProps {
 
 const ListBoard = ({ lists, currentList, setCurrentList, onInviteClick }: ListBoardProps) => {
   const [newListName, setNewListName] = useState('');
-  const [orderedLists, setOrderedLists] = useState<any[]>(lists);
+  const [hierarchicalLists, setHierarchicalLists] = useState<ListItem[]>([]);
 
-  // Update orderedLists when lists prop changes
-  React.useEffect(() => {
-    setOrderedLists(lists);
+  // Convert flat lists to hierarchical structure
+  useEffect(() => {
+    // First convert the flat list to a map for easier reference
+    const listMap = new Map<string, ListItem>();
+    lists.forEach(list => {
+      listMap.set(list.id, { ...list, children: [], isOpen: true });
+    });
+
+    // Then build the hierarchy
+    const rootLists: ListItem[] = [];
+    listMap.forEach(list => {
+      if (list.parentId && listMap.has(list.parentId)) {
+        // This list has a parent
+        const parent = listMap.get(list.parentId)!;
+        if (!parent.children) {
+          parent.children = [];
+        }
+        parent.children.push(list);
+      } else {
+        // This is a root level list
+        rootLists.push(list);
+      }
+    });
+
+    setHierarchicalLists(rootLists);
   }, [lists]);
 
   const handleCreateList = () => {
@@ -41,15 +72,173 @@ const ListBoard = ({ lists, currentList, setCurrentList, onInviteClick }: ListBo
       return;
     }
 
-    const items = Array.from(orderedLists);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
-
-    setOrderedLists(items);
-    toast.success('List order updated');
+    const { source, destination, draggableId } = result;
     
-    // In a real app, you would save the new order to the backend here
+    // Clone the current hierarchical lists to modify
+    const newHierarchicalLists = JSON.parse(JSON.stringify(hierarchicalLists));
+    
+    // If droppable ID contains a list ID (for nesting), handle differently
+    if (destination.droppableId !== "lists") {
+      // This is a drop inside another list (making it a child)
+      const targetListId = destination.droppableId.replace('list-', '');
+      
+      // Find the source list and remove it from its current position
+      let draggedList: ListItem | null = null;
+      const findAndRemoveList = (lists: ListItem[], id: string): boolean => {
+        for (let i = 0; i < lists.length; i++) {
+          if (lists[i].id === id) {
+            draggedList = lists[i];
+            lists.splice(i, 1);
+            return true;
+          }
+          if (lists[i].children && lists[i].children!.length > 0) {
+            if (findAndRemoveList(lists[i].children!, id)) {
+              return true;
+            }
+          }
+        }
+        return false;
+      };
+      
+      findAndRemoveList(newHierarchicalLists, draggableId);
+      
+      // Update the parent ID of the dragged list
+      if (draggedList) {
+        draggedList.parentId = targetListId;
+        
+        // Find the target list and add the dragged list to its children
+        const findAndAddToTarget = (lists: ListItem[], targetId: string): boolean => {
+          for (const list of lists) {
+            if (list.id === targetId) {
+              if (!list.children) {
+                list.children = [];
+              }
+              list.children.push(draggedList!);
+              return true;
+            }
+            if (list.children && list.children.length > 0) {
+              if (findAndAddToTarget(list.children, targetId)) {
+                return true;
+              }
+            }
+          }
+          return false;
+        };
+        
+        findAndAddToTarget(newHierarchicalLists, targetListId);
+      }
+    } else {
+      // This is a reordering at the root level
+      const draggedList = newHierarchicalLists.splice(source.index, 1)[0];
+      newHierarchicalLists.splice(destination.index, 0, draggedList);
+    }
+    
+    setHierarchicalLists(newHierarchicalLists);
+    toast.success('List hierarchy updated');
+    
+    // In a real app, you would save the new hierarchy to the backend here
   };
+
+  // Toggle list expansion
+  const toggleListOpen = (listId: string) => {
+    const toggleInList = (lists: ListItem[]): boolean => {
+      for (let i = 0; i < lists.length; i++) {
+        if (lists[i].id === listId) {
+          lists[i].isOpen = !lists[i].isOpen;
+          return true;
+        }
+        if (lists[i].children && lists[i].children!.length > 0) {
+          if (toggleInList(lists[i].children!)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    };
+    
+    const newLists = JSON.parse(JSON.stringify(hierarchicalLists));
+    toggleInList(newLists);
+    setHierarchicalLists(newLists);
+  };
+
+  // Render a list item with its children recursively
+  const renderListItem = (list: ListItem, index: number, level: number = 0) => (
+    <Draggable key={list.id} draggableId={list.id} index={index}>
+      {(provided, snapshot) => (
+        <div 
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          className="list-item"
+        >
+          <div 
+            className={`flex items-center justify-between p-2 rounded transition-colors cursor-pointer 
+              ${snapshot.isDragging ? 'bg-purple-50 shadow-md' : ''}
+              ${currentList.id === list.id ? 'bg-purple-100 border-l-4 border-proz-purple' : 'hover:bg-gray-50 border-l-4 border-transparent'}`}
+            onClick={() => setCurrentList(list)}
+            style={{ paddingLeft: `${level * 12 + 8}px` }}
+          >
+            <div className="flex items-center">
+              <div 
+                {...provided.dragHandleProps} 
+                className="mr-2 text-gray-400 hover:text-gray-600"
+              >
+                ☰
+              </div>
+              
+              {list.children && list.children.length > 0 && (
+                <button 
+                  className="mr-1 text-gray-500 hover:text-gray-700"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleListOpen(list.id);
+                  }}
+                >
+                  {list.isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                </button>
+              )}
+              
+              <Folder size={16} className="mr-1 text-gray-500" />
+              
+              <span className={currentList.id === list.id ? 'font-medium text-proz-purple' : ''}>
+                {list.name}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button className="text-gray-400 hover:text-yellow-500 transition-colors">
+                <Star size={16} />
+              </button>
+              <button className="text-gray-400 hover:text-blue-500 transition-colors">
+                <Edit size={16} />
+              </button>
+              <span className="bg-proz-purple text-white px-2 py-0.5 rounded-full text-xs">
+                {list.vendorCount || 0}
+              </span>
+            </div>
+          </div>
+          
+          {/* Droppable area for child lists */}
+          {list.isOpen && (
+            <Droppable droppableId={`list-${list.id}`} type="list">
+              {(provided) => (
+                <div
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className="pl-4"
+                >
+                  {list.children && list.children.length > 0 && 
+                    list.children.map((child, childIndex) => 
+                      renderListItem(child, childIndex, level + 1)
+                    )
+                  }
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          )}
+        </div>
+      )}
+    </Draggable>
+  );
 
   return (
     <div>
@@ -90,46 +279,14 @@ const ListBoard = ({ lists, currentList, setCurrentList, onInviteClick }: ListBo
         </div>
         
         <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="lists">
+          <Droppable droppableId="lists" type="list">
             {(provided) => (
               <div 
                 className="space-y-1 max-h-[calc(100vh-300px)] overflow-y-auto"
                 {...provided.droppableProps}
                 ref={provided.innerRef}
               >
-                {orderedLists.map((list, index) => (
-                  <Draggable key={list.id} draggableId={list.id} index={index}>
-                    {(provided, snapshot) => (
-                      <div 
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        className={`flex items-center justify-between p-2 rounded transition-colors cursor-pointer 
-                          ${snapshot.isDragging ? 'bg-purple-50 shadow-md' : ''}
-                          ${currentList.id === list.id ? 'bg-purple-100 border-l-4 border-proz-purple' : 'hover:bg-gray-50 border-l-4 border-transparent'}`}
-                        onClick={() => setCurrentList(list)}
-                      >
-                        <div className="flex items-center">
-                          <button className="mr-2 text-gray-400 hover:text-gray-600">☰</button>
-                          <span className={currentList.id === list.id ? 'font-medium text-proz-purple' : ''}>
-                            {list.name}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button className="text-gray-400 hover:text-yellow-500 transition-colors">
-                            <Star size={16} />
-                          </button>
-                          <button className="text-gray-400 hover:text-blue-500 transition-colors">
-                            <Edit size={16} />
-                          </button>
-                          <span className="bg-proz-purple text-white px-2 py-0.5 rounded-full text-xs">
-                            {list.vendorCount || 0}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
+                {hierarchicalLists.map((list, index) => renderListItem(list, index))}
                 {provided.placeholder}
               </div>
             )}

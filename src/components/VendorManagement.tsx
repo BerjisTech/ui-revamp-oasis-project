@@ -9,9 +9,17 @@ import MessageBoard from './vendor/MessageBoard';
 import InviteVendorsModal from './vendor/InviteVendorsModal';
 import AddToListDemo from './vendor/AddToListDemo';
 
+interface VendorList {
+  id: string;
+  name: string;
+  vendorCount: number;
+  parentId?: string | null;
+  vendors?: any[];
+}
+
 const VendorManagement = () => {
-  const [lists, setLists] = useState<any[]>([]);
-  const [currentList, setCurrentList] = useState<any>({
+  const [lists, setLists] = useState<VendorList[]>([]);
+  const [currentList, setCurrentList] = useState<VendorList>({
     id: '123', 
     name: 'Another banger',
     vendors: []
@@ -26,13 +34,15 @@ const VendorManagement = () => {
       try {
         // In a real app, this would call the API
         // const listsData = await getVendorLists();
-        // For demo, we'll use mock data
-        const listsData = [
+        // For demo, we'll use mock data with parent-child relationships
+        const listsData: VendorList[] = [
           { id: '123', name: 'Another banger', vendorCount: 3 },
-          { id: '456', name: 'Sublist', vendorCount: 0 },
+          { id: '456', name: 'Sublist', vendorCount: 0, parentId: '123' },
           { id: '789', name: 'Technical Translators', vendorCount: 5 },
-          { id: '012', name: 'Preferred Vendors', vendorCount: 2 },
-          { id: '345', name: 'Spanish Translators', vendorCount: 7 }
+          { id: '012', name: 'Preferred Vendors', vendorCount: 2, parentId: '789' },
+          { id: '345', name: 'Spanish Translators', vendorCount: 7 },
+          { id: '678', name: 'Latin America', vendorCount: 3, parentId: '345' },
+          { id: '901', name: 'Spain', vendorCount: 4, parentId: '345' }
         ];
         setLists(listsData);
       } catch (error) {
