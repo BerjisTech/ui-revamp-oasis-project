@@ -1,7 +1,23 @@
 
 import React, { useState } from 'react';
-import { Plus, Send, Trash2, MoveRight, CheckCircle, Info, Users, Star } from 'lucide-react';
+import { Plus, Send, Trash2, MoveRight, CheckCircle, Info, Users, Star, Settings, Copy, Archive } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { addVendor } from '../../lib/db';
 import { toast } from 'sonner';
 
@@ -13,6 +29,7 @@ interface VendorListDetailProps {
 const VendorListDetail = ({ currentList, setCurrentList }: VendorListDetailProps) => {
   const [newVendorName, setNewVendorName] = useState('');
   const [newFolderName, setNewFolderName] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const handleAddVendor = async () => {
     if (!newVendorName.trim() || !currentList.id) return;
@@ -34,6 +51,26 @@ const VendorListDetail = ({ currentList, setCurrentList }: VendorListDetailProps
     }
   };
 
+  const handleCloneList = () => {
+    toast.success('List cloned successfully');
+    // In a real app, this would call API to clone the list
+  };
+
+  const handleArchiveList = () => {
+    toast.success('List archived successfully');
+    // In a real app, this would call API to archive the list
+  };
+
+  const handleDeleteList = () => {
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteList = () => {
+    // In a real app, this would call API to delete the list
+    toast.success('List deleted successfully');
+    setDeleteDialogOpen(false);
+  };
+
   return (
     <div className="bg-white border border-gray-200 rounded-md shadow-sm h-full">
       <div className="flex justify-between items-center p-4 border-b border-gray-200">
@@ -46,10 +83,28 @@ const VendorListDetail = ({ currentList, setCurrentList }: VendorListDetailProps
             <span className="text-gray-700 font-medium">{currentList.vendors?.length || 0}</span>
           </div>
         </div>
-        <Button variant="outline" size="sm">
-          <span className="sr-only">Settings</span>
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-        </Button>
+        <ContextMenu>
+          <ContextMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              <span className="sr-only">Settings</span>
+              <Settings size={18} />
+            </Button>
+          </ContextMenuTrigger>
+          <ContextMenuContent className="w-56">
+            <ContextMenuItem onClick={handleCloneList}>
+              <Copy className="mr-2 h-4 w-4" />
+              <span>Clone list</span>
+            </ContextMenuItem>
+            <ContextMenuItem onClick={handleArchiveList}>
+              <Archive className="mr-2 h-4 w-4" />
+              <span>Archive list</span>
+            </ContextMenuItem>
+            <ContextMenuItem onClick={handleDeleteList} className="text-red-600 hover:text-red-700">
+              <Trash2 className="mr-2 h-4 w-4" />
+              <span>Delete list</span>
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
       </div>
       
       <div className="p-4 flex flex-wrap items-center justify-between gap-4">
@@ -103,6 +158,25 @@ const VendorListDetail = ({ currentList, setCurrentList }: VendorListDetailProps
           <p className="text-gray-500">No talents yet. Drag and drop talents here.</p>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the list "{currentList.name}" and remove it from all views.
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteList} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
