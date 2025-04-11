@@ -28,8 +28,11 @@ const VendorManagement = () => {
         // const listsData = await getVendorLists();
         // For demo, we'll use mock data
         const listsData = [
-          { id: '123', name: 'Another banger', vendorCount: 0 },
-          { id: '456', name: 'Sublist', vendorCount: 0 }
+          { id: '123', name: 'Another banger', vendorCount: 3 },
+          { id: '456', name: 'Sublist', vendorCount: 0 },
+          { id: '789', name: 'Technical Translators', vendorCount: 5 },
+          { id: '012', name: 'Preferred Vendors', vendorCount: 2 },
+          { id: '345', name: 'Spanish Translators', vendorCount: 7 }
         ];
         setLists(listsData);
       } catch (error) {
