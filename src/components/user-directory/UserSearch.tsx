@@ -2,56 +2,106 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ChevronDown } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const SearchField = ({ 
   label, 
   placeholder = "Any",
-  note = ""
+  note = "",
+  options = [],
+  isSelect = true
 }: { 
   label: string; 
   placeholder?: string;
   note?: string;
+  options?: string[];
+  isSelect?: boolean;
 }) => (
   <div className="mb-4">
     <Label className="text-xs uppercase font-semibold text-gray-600 mb-1 block">
       {label} {note && <span className="text-xs normal-case font-normal text-gray-500">({note})</span>}
     </Label>
-    <div className="relative">
-      <Input placeholder={placeholder} className="proz-input pr-8" />
-      <ChevronDown className="h-4 w-4 absolute right-2 top-3 text-gray-400" />
-    </div>
+    
+    {isSelect ? (
+      <Select>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {options.length === 0 ? (
+            <SelectItem value="any">Any</SelectItem>
+          ) : (
+            options.map((option) => (
+              <SelectItem key={option} value={option.toLowerCase()}>{option}</SelectItem>
+            ))
+          )}
+        </SelectContent>
+      </Select>
+    ) : (
+      <Input placeholder={placeholder} className="proz-input" />
+    )}
   </div>
 );
 
 const UserSearch = () => {
+  const serviceTypes = ["Translation", "Proofreading", "Interpretation", "Subtitling"];
+  const languages = ["English", "Spanish", "French", "German", "Russian", "Chinese", "Arabic"];
+  const paymentTypes = ["Bank Transfer", "PayPal", "Payoneer", "Stripe"];
+  const countries = ["United States", "Spain", "France", "Germany", "United Kingdom", "Canada", "Australia"];
+  const regions = ["North America", "South America", "Europe", "Asia", "Africa", "Oceania"];
+  const kmTools = ["SDL Trados", "memoQ", "Wordfast", "Memsource", "DeepL", "Google Translate"];
+
   return (
     <form>
-      <SearchField label="SERVICE TYPE" />
-      <SearchField label="SOURCE LANGUAGE" note="Required field" />
-      <SearchField label="TARGET LANGUAGE" note="Required field" />
-      <SearchField label="NATIVE LANGUAGE" />
+      <SearchField label="SERVICE TYPE" options={serviceTypes} />
+      <SearchField label="SOURCE LANGUAGE" note="Required field" options={languages} />
+      <SearchField label="TARGET LANGUAGE" note="Required field" options={languages} />
+      <SearchField label="NATIVE LANGUAGE" options={languages} />
       <SearchField label="FIELD OF EXPERTISE" />
-      <SearchField label="PAYMENT TYPE" />
+      <SearchField label="PAYMENT TYPE" options={paymentTypes} />
       
       <div className="mb-4">
         <Label className="text-xs uppercase font-semibold text-gray-600 mb-1 block">
           LOCATION
         </Label>
         <div className="space-y-2">
-          <div className="relative">
+          <div>
             <Label className="text-xs text-gray-600 mb-1 block">Country:</Label>
-            <Input placeholder="Any" className="proz-input pr-8" />
-            <ChevronDown className="h-4 w-4 absolute right-2 top-8 text-gray-400" />
+            <Select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Any" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="any">Any</SelectItem>
+                {countries.map((country) => (
+                  <SelectItem key={country} value={country.toLowerCase()}>{country}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
-          <div className="relative">
+          <div>
             <Label className="text-xs text-gray-600 mb-1 block">Region:</Label>
-            <Input placeholder="Any" className="proz-input pr-8" />
-            <ChevronDown className="h-4 w-4 absolute right-2 top-8 text-gray-400" />
+            <Select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Any" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="any">Any</SelectItem>
+                {regions.map((region) => (
+                  <SelectItem key={region} value={region.toLowerCase()}>{region}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
-          <div className="relative">
+          <div>
             <Label className="text-xs text-gray-600 mb-1 block">City:</Label>
             <Input placeholder="Type a location" className="proz-input" />
           </div>
@@ -74,9 +124,9 @@ const UserSearch = () => {
         </div>
       </div>
       
-      <SearchField label="USER NAME" placeholder="Enter name of the user you want to find" />
-      <SearchField label="KM TOOL" />
-      <SearchField label="KEYWORDS" placeholder="Enter keywords" />
+      <SearchField label="USER NAME" placeholder="Enter name of the user you want to find" isSelect={false} />
+      <SearchField label="KM TOOL" options={kmTools} />
+      <SearchField label="KEYWORDS" placeholder="Enter keywords" isSelect={false} />
       
       <div className="mb-4">
         <Label className="text-xs uppercase font-semibold text-gray-600 mb-1 block">

@@ -12,7 +12,7 @@ const UserDirectory = () => {
   const [activeTab, setActiveTab] = useState<'new' | 'saved'>('new');
   const [vendorLists, setVendorLists] = useState([
     { id: '1', name: 'My Translators', vendorCount: 5 },
-    { id: '2', name: 'Proofreaders', vendorCount: 3 },
+    { id: '2', name: 'Proofreaders', vendorCount: 3, parentId: '1' },
     { id: '3', name: 'Preferred Vendors', vendorCount: 8 }
   ]);
   const [currentList, setCurrentList] = useState(vendorLists[0]);
