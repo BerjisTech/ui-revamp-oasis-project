@@ -7,6 +7,7 @@ import ListBoard from './vendor/ListBoard';
 import VendorListDetail from './vendor/VendorListDetail';
 import MessageBoard from './vendor/MessageBoard';
 import InviteVendorsModal from './vendor/InviteVendorsModal';
+import AddToListDemo from './vendor/AddToListDemo';
 
 const VendorManagement = () => {
   const [lists, setLists] = useState<any[]>([]);
@@ -71,6 +72,11 @@ const VendorManagement = () => {
           Manage your search for language professionals at ProZ.com. Organize candidates into lists and folders and track your correspondence.{' '}
           <a href="#" className="text-blue-600 hover:underline">Learn more.</a>
         </p>
+        
+        {/* Add the demo component at the top */}
+        <div className="mb-6">
+          <AddToListDemo />
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           {/* Left Column - List Board */}
