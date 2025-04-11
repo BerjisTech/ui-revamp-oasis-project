@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Send, Trash2, MoveRight, CheckCircle } from 'lucide-react';
+import { Send, Trash2, MoveRight, CheckCircle, Info } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
   Popover,
