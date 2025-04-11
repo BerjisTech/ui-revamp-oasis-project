@@ -14,6 +14,7 @@ interface VendorListDetailProps {
 
 const VendorListDetail = ({ currentList, setCurrentList }: VendorListDetailProps) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
   
   // Mock folders data - in a real app this would come from an API
   const [folders] = useState([
@@ -23,6 +24,11 @@ const VendorListDetail = ({ currentList, setCurrentList }: VendorListDetailProps
     { id: '4', name: 'Translators' },
     { id: '5', name: 'Project Managers' },
   ]);
+
+  const handleToggleFavorite = () => {
+    setIsFavorite(!isFavorite);
+    toast.success(isFavorite ? 'Removed from favorites' : 'Added to favorites');
+  };
 
   const handleCloneList = () => {
     toast.success('List cloned successfully');
@@ -63,6 +69,9 @@ const VendorListDetail = ({ currentList, setCurrentList }: VendorListDetailProps
     <div className="bg-white border border-gray-200 rounded-md shadow-sm h-full">
       <ListHeader 
         vendorCount={currentList.vendors?.length || 0}
+        listName={currentList.name}
+        isFavorite={isFavorite}
+        onToggleFavorite={handleToggleFavorite}
         onCloneList={handleCloneList}
         onArchiveList={handleArchiveList}
         onDeleteList={handleDeleteList}
