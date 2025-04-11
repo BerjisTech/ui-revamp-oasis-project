@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Send, Trash2, MoveRight, CheckCircle, Info } from 'lucide-react';
+import { Send, Trash2, MoveRight, CheckCircle, Info, Users } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -18,6 +18,14 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Search } from 'lucide-react';
 import {
   Tooltip,
@@ -25,6 +33,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import UserSearchForm from "@/components/user-directory/UserSearchForm";
+import { toast } from "sonner";
 
 interface BulkActionsProps {
   folders: Array<{ id: string; name: string }>;
@@ -39,6 +49,7 @@ const BulkActions = ({ folders, onMoveToFolder, onSendMessage, listName }: BulkA
   const [composeDrawerOpen, setComposeDrawerOpen] = React.useState(false);
   const [messageSubject, setMessageSubject] = React.useState('');
   const [messageBody, setMessageBody] = React.useState('');
+  const [searchDrawerOpen, setSearchDrawerOpen] = React.useState(false);
 
   const filteredFolders = folders.filter(folder => 
     folder.name.toLowerCase().includes(folderSearchQuery.toLowerCase())
@@ -51,10 +62,36 @@ const BulkActions = ({ folders, onMoveToFolder, onSendMessage, listName }: BulkA
     setComposeDrawerOpen(false);
   };
 
+  const handleAddUsersToList = (selectedUsers: any[]) => {
+    // In a real implementation, this would add the selected users to the list
+    toast.success(`${selectedUsers.length || 'Multiple'} users added to list`);
+    setSearchDrawerOpen(false);
+  };
+
   return (
     <div className="p-4 border-t border-gray-200">
       <div className="flex flex-wrap items-center gap-2 mb-4">
-        <span className="text-gray-700">Select talents and...</span>
+        <Sheet open={searchDrawerOpen} onOpenChange={setSearchDrawerOpen}>
+          <SheetTrigger asChild>
+            <span className="text-gray-700 cursor-pointer hover:text-gray-900 flex items-center gap-1">
+              Select talents and...
+            </span>
+          </SheetTrigger>
+          <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle>Search & Add Talents</SheetTitle>
+              <SheetDescription>
+                Search for talents to add to {listName}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="mt-6">
+              <UserSearchForm 
+                showAddButton={true}
+                onAddToList={handleAddUsersToList}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
         
         <TooltipProvider>
           <Drawer open={composeDrawerOpen} onOpenChange={setComposeDrawerOpen}>
