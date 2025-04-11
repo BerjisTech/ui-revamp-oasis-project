@@ -24,6 +24,12 @@ const DeleteConfirmDialog = ({
   listName, 
   onConfirmDelete 
 }: DeleteConfirmDialogProps) => {
+  const handleConfirmDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onConfirmDelete();
+  };
+
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -36,7 +42,7 @@ const DeleteConfirmDialog = ({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirmDelete} className="bg-red-600 hover:bg-red-700">
+          <AlertDialogAction onClick={handleConfirmDelete} className="bg-red-600 hover:bg-red-700">
             Delete
           </AlertDialogAction>
         </AlertDialogFooter>
