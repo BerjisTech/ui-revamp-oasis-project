@@ -6,9 +6,20 @@ import UserSearchResults from '@/components/user-directory/UserSearchResults';
 import { Button } from '@/components/ui/button';
 import { SavedSearches } from '@/components/user-directory/SavedSearches';
 import ListBoard from '@/components/vendor/ListBoard';
+import { toast } from 'sonner';
 
 const UserDirectory = () => {
   const [activeTab, setActiveTab] = useState<'new' | 'saved'>('new');
+  const [vendorLists, setVendorLists] = useState([
+    { id: '1', name: 'My Translators', vendorCount: 5 },
+    { id: '2', name: 'Proofreaders', vendorCount: 3 },
+    { id: '3', name: 'Preferred Vendors', vendorCount: 8 }
+  ]);
+  const [currentList, setCurrentList] = useState(vendorLists[0]);
+  
+  const handleInviteClick = () => {
+    toast.info("Invite vendor feature coming soon");
+  };
   
   return (
     <Layout>
@@ -57,7 +68,12 @@ const UserDirectory = () => {
           
           {/* Right panel - List board */}
           <div className="hidden lg:block lg:col-span-3">
-            <ListBoard />
+            <ListBoard 
+              lists={vendorLists}
+              currentList={currentList}
+              setCurrentList={setCurrentList}
+              onInviteClick={handleInviteClick}
+            />
           </div>
         </div>
       </div>
